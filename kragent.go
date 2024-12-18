@@ -127,6 +127,12 @@ func main() {
 		case "guest-fsfreeze-status":
 			je.Encode(Return{guestFsfreezeStatus})
 			bw.Flush()
+		case "guest-exec":
+			je.Encode(Return{CommandFor(m.Arguments)})
+			bw.Flush()
+		case "guest-exec-status":
+			je.Encode(Return{ResultsOf(m.Arguments)})
+			bw.Flush()
 		default:
 			log.Printf("Unhandled command %q", m.Execute)
 		}
@@ -253,6 +259,16 @@ type Return struct {
 type MessageArgs struct {
 	ID   int64  `json:"id,omitempty"`
 	Mode string `json:"mode"` // "halt" or "powerdown" (default) for "guest-shutdown"
+
+	// guest-exec arguments
+	Path     string   `json:"path"`           // path or executable name to execute
+	CmdArgs  []string `json:"arg"`            // argument list to pass to executable
+	CmdEnv   []string `json:"env"`            // environment variables to pass to executable
+	CmdInput []byte   `json:"input-data"`     // data to be passed to process stdin (base64 encoded)
+	CmdCap   bool     `json:"capture-output"` // captures both stdout and stderr if true.
+
+	// guest-exec-status arguments
+	StatusPID int `json:"pid"`
 }
 
 type NetworkInterface struct {
